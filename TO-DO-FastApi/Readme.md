@@ -16,7 +16,7 @@ Follow these instructions to test and use the application:
 
 1. **Clone the Repository:**
    ```bash
-   git clone <repository_url>
+   git clone https://github.com/AnuragDubey14/fast-api-python/tree/main/TO-DO-FastApi
    ```
 
 2. **Navigate to the Backend Folder:**
@@ -29,7 +29,6 @@ Follow these instructions to test and use the application:
    ```bash
    .\fastenv\Scripts\activate
    ```
-   *(Ensure you have already created the virtual environment.)*
 
 4. **Run the Application:**
    ```bash
