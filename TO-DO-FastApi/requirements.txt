@@ -1,6 +1,4 @@
 fastapi[standard]
 uvicorn[standard]
-PyQt5
 sqlalchemy
 pymysql
-alembic

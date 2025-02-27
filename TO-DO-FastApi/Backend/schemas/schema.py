@@ -7,8 +7,8 @@ class Task(BaseModel):
     title: str
     description: str
     status: bool
-    created_at: datetime  # To capture the creation timestamp
-    updated_at: datetime  # To capture the update timestamp
+    created_at: datetime  
+    updated_at: datetime  
 
     class Config:
         from_attributes  = True  # This allows Pydantic to work with ORM objects
@@ -18,8 +18,8 @@ class TaskResponse(BaseModel):
     title: str
     description: str
     status: bool
-    created_at: datetime  # To capture the creation timestamp
-    updated_at: datetime  # To capture the update timestamp
+    created_at: datetime  
+    updated_at: datetime  
 
     class Config:
         from_attributes  = True  # This allows Pydantic to work with ORM objects

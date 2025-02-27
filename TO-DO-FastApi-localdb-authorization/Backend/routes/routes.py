@@ -108,6 +108,11 @@ def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+#Index 
+@taskRouter.get('/')
+def index():
+    return {"msg":"Welcome to the TO DO App using FastAPI"}
+
 # Get all tasks
 @taskRouter.get('/tasks', response_model=list[TaskResponse])
 async def all_tasks(db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine,MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
 
-DATABASE_URL = "sqlite:///./tasks.db"  # Change this to your actual database URL
+DATABASE_URL = "sqlite:///./tasks.db" 
 
 # Create the database engine
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
