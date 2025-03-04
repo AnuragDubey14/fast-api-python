@@ -7,7 +7,7 @@ This project is a robust To-Do application built with FastAPI. It leverages SQLA
 
 ## Features
 
-- **JWT-Based Authentication:**  
+- **JWT-Based Authentication:** 
   Secure user registration and login with JSON Web Tokens to protect endpoints.
 
 - **Local Database Authorization:**  
@@ -46,34 +46,29 @@ This project is a robust To-Do application built with FastAPI. It leverages SQLA
    cd fast-api-python/TO-DO-FastApi-localdb-authorization
    ```
 
-2. **Create and Activate a Virtual Environment:**
+
+2. **Activate a Virtual Environment:**
 
    ```bash
-   python -m venv fastenv
    # On Windows:
    fastenv\Scripts\activate
    # On macOS/Linux:
    source fastenv/bin/activate
    ```
 
-3. **Install Dependencies:**
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure Environment Variables:**
+3. **Configure Environment Variables:**
 
    Create a `.env` file (if required) to store your configuration such as:
    - `DB_URL=mysql+pymysql://<username>:<password>@<host>:<port>/<database>`
    - `SECRET_KEY=your_secret_key`
    - (Other configurations as needed)
 
-5. **Set Up the Database:**
+4. **Set Up the Database:**
 
    Ensure you have a MySQL database created (e.g., `to_do_fast` for production or a dedicated test database).
 
-6. **Run the Application:**
+5. **Run the Application:**
 
    ```bash
    fastapi dev app.py
@@ -102,16 +97,18 @@ This project is a robust To-Do application built with FastAPI. It leverages SQLA
 
 Tests are written using pytest and FastAPI’s TestClient. To run the tests:
 
-1. **Configure a Test Database:**  
-   Update the connection string in your test configuration (e.g., in `tests/test_api.py`) to point to your MySQL test database.
+1. **Configure a Test Database(in MySQL):**  
+   ```bash
+   CREATE DATABASE test_db
+   ```
 
 2. **Run Pytest:**
 
    ```bash
-   pytest
+   pytest test.py
    ```
 
-   This will run all your test cases and provide a summary.
+   This will run all test cases and provide a summary.
 
 ## Future Enhancements
 
