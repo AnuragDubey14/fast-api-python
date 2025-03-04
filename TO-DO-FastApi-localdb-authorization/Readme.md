@@ -1,4 +1,4 @@
-# FastAPI To-Do App with Local Database Authorization
+# FastAPI To-Do App with Local Database and Authorization
 
 This project is a robust To-Do application built with FastAPI. It leverages SQLAlchemy for persistent storage, Pydantic for data validation, and JWT for secure user authentication. The application features a clean and modular architecture with comprehensive endpoints for creating, reading, updating, and deleting tasks—all while ensuring that only authorized users can manage their tasks.
 
