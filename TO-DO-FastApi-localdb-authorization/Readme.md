@@ -120,5 +120,3 @@ Contributions, suggestions, and feedback are welcome! Feel free to open issues o
 
 ---
 
-Happy coding! 🚀
-```
