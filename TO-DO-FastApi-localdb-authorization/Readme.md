@@ -1,4 +1,4 @@
-Below is a sample README.md for your project. You can copy and paste this into your repository’s README.md file and adjust details as needed:
+
 
 ```markdown
 # FastAPI To-Do App with Local Database Authorization
