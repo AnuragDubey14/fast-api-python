@@ -1,17 +1,18 @@
 from sqlalchemy import Column, Integer, VARCHAR, Boolean, DateTime, UniqueConstraint, ForeignKey
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from config.db import Base
 
 class Task(Base):
     __tablename__ = "tasks"
 
-    task_id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, primary_key=True, index=True,autoincrement=True)
     title = Column(VARCHAR(50), unique=True, nullable=False)  # Unique title constraint
     description = Column(VARCHAR(255), nullable=True)
     status = Column(Boolean, default=False)
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime)
-    deadline = Column(DateTime)
+    created_at = Column(DateTime,default=datetime.now)
+    updated_at = Column(DateTime,default=datetime.now)
+    deadline = Column(DateTime,nullable=False)
     owner_id = Column(Integer, ForeignKey("users.user_id"))  # Updated foreign key reference
 
     # Define relationship with User
@@ -24,7 +25,7 @@ class Task(Base):
 class User(Base):
     __tablename__ = "users"
 
-    user_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, primary_key=True, index=True,autoincrement=True)
     user_name = Column(VARCHAR(50), unique=True, nullable=False)  # Unique name constraint
     user_password = Column(VARCHAR(255), nullable=False)
 

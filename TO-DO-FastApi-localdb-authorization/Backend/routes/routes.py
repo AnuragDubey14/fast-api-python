@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 from dependencies import get_db,oauth2_scheme
 from models.index import Task,User
-from schemas.schema import TaskSchema, TaskResponse,UserSchema,UserCreate
+from schemas.schema import TaskSchema, TaskResponse,UserSchema,UserCreate,TaskDeadlineUpdate,TaskStatusUpdate
 from datetime import datetime, timedelta
 import jwt
 from passlib.context import CryptContext
@@ -14,12 +14,13 @@ taskRouter = APIRouter()
 
 
 # JWT Configuration
+# SECRET_KEY = "mvtYwqabaRXvJvSI0zGWpM-O0WXk2D7UFGvgDwG7QzQ="  
 SECRET_KEY = "your_secret_key"  
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
@@ -140,26 +141,31 @@ async def get_task(id: int | None = None, title: str | None = None, db: Session 
 
 # Add a new task
 @taskRouter.post('/task/')
-async def add_task(task: TaskSchema, db: Session = Depends(get_db),token:str=Depends(oauth2_scheme),current_user: User = Depends(get_current_user)):
+async def add_task(task: TaskSchema, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: User = Depends(get_current_user)):
     new_task = Task(
         title=task.title,
         description=task.description,
         status=task.status,
         created_at=task.created_at,
         updated_at=task.updated_at,
-        owner_id=current_user.user_id
+        owner_id=current_user.user_id,
+        deadline=task.deadline
     )
 
     try:
         db.add(new_task)
         db.commit()
         db.refresh(new_task)
-        return {"message": "Task added successfully", "task": new_task}
+        # Convert new_task to a serializable model using TaskResponse
+        return {"message": "Task added successfully", "task": TaskResponse.model_validate(new_task)}
     
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="Task with this title already exists")
 
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=404,detail=f"Something happened {e}")
 
 # Update task by ID or Title
 @taskRouter.put('/task/', response_model=TaskResponse)
@@ -190,56 +196,78 @@ async def update_task(
     existing_task.title = task.title
     existing_task.description = task.description
     existing_task.status = task.status
+    existing_task.updated_at=task.updated_at
+    existing_task.deadline=task.deadline if task.deadline else existing_task.deadline
 
     db.commit()
     db.refresh(existing_task)
     return TaskResponse.model_validate(existing_task)
 
-@taskRouter.patch('/task',response_model=TaskResponse)
-async def update_status(id:int|None,title:str|None, status:bool,task:TaskSchema=Body(...),db: Session=Depends(get_db),token:str=Depends(oauth2_scheme),current_user: User = Depends(get_current_user)):
-    query = None
 
+
+@taskRouter.patch('/task/status', response_model=TaskResponse)
+async def update_status(
+    id: int | None = None,
+    title: str | None = None,
+    update: TaskStatusUpdate = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     if id:
         query = db.query(Task).filter(Task.task_id == id)
     elif title:
         query = db.query(Task).filter(Task.title == title)
     else:
         raise HTTPException(status_code=400, detail="Please provide either task ID or title")
-
     existing_task = query.first()
     if not existing_task:
         raise HTTPException(status_code=404, detail="Task not found")
+    if existing_task.owner_id != current_user.user_id:
+        raise HTTPException(status_code=401, detail="You are unauthorized to update status of this task")
     
-    elif existing_task.owner_id!=current_user.user_id:
-        raise HTTPException(status_code=401,detail="You are unauthorized to update status of this task")
-
-    existing_task.status = task.status
-
+    existing_task.status = update.status
     db.commit()
     db.refresh(existing_task)
     return TaskResponse.model_validate(existing_task)
 
-
-
-# Delete task by ID or Title
-@taskRouter.delete('/task/', response_model=dict)
-async def delete_task(id: int | None = None, title: str | None = None, db: Session = Depends(get_db),token:str=Depends(oauth2_scheme),current_user: User = Depends(get_current_user)):
-    query = None
-
+@taskRouter.patch('/task/deadline', response_model=TaskResponse)
+async def update_deadline(
+    id: int | None = None,
+    title: str | None = None,
+    update: TaskDeadlineUpdate = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     if id:
         query = db.query(Task).filter(Task.task_id == id)
     elif title:
         query = db.query(Task).filter(Task.title == title)
     else:
         raise HTTPException(status_code=400, detail="Please provide either task ID or title")
+    existing_task = query.first()
+    if not existing_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if existing_task.owner_id != current_user.user_id:
+        raise HTTPException(status_code=401, detail="You are unauthorized to update deadline of this task")
+    
+    existing_task.deadline = update.deadline
+    db.commit()
+    db.refresh(existing_task)
+    return TaskResponse.model_validate(existing_task)
 
+@taskRouter.delete('/task/', response_model=dict)
+async def delete_task(id: int | None = None, title: str | None = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if id:
+        query = db.query(Task).filter(Task.task_id == id)
+    elif title:
+        query = db.query(Task).filter(Task.title == title)
+    else:
+        raise HTTPException(status_code=400, detail="Please provide either task ID or title")
     task = query.first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
-    if task.owner_id!=current_user.user_id:
-        raise HTTPException(status_code=401,detail="You are unauthorized to delete this task")
-
+    if task.owner_id != current_user.user_id:
+        raise HTTPException(status_code=401, detail="You are unauthorized to delete this task")
     db.delete(task)
     db.commit()
     return {"message": "Task deleted successfully"}
